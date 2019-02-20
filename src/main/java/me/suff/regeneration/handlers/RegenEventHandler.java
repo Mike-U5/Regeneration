@@ -36,13 +36,11 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,58 +70,27 @@ public class RegenEventHandler {
 	@SubscribeEvent
 	public void onPlayerUpdate(LivingEvent.LivingUpdateEvent event) {
 		if (event.getEntityLiving() instanceof EntityPlayer)
-			CapabilityRegeneration.getForPlayer((EntityPlayer) event.getEntityLiving()).tick();
+			CapabilityRegeneration.get((EntityPlayer) event.getEntityLiving()).tick();
 	}
 	
 	
 	@SubscribeEvent
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		if (!RegenConfig.CONFIG.firstStartGiftOnly.get())
-			CapabilityRegeneration.getForPlayer(event.getPlayer()).receiveRegenerations(RegenConfig.CONFIG.freeRegenerations.get());
+			CapabilityRegeneration.get(event.getPlayer()).receiveRegenerations(RegenConfig.CONFIG.freeRegenerations.get());
 		
-		CapabilityRegeneration.getForPlayer(event.getPlayer()).synchronise();
+		CapabilityRegeneration.get(event.getPlayer()).synchronise();
 	}
 	
 	@SubscribeEvent
 	public void onPlayerChangedDimension(PlayerChangedDimensionEvent event) {
-		CapabilityRegeneration.getForPlayer(event.getPlayer()).synchronise();
+		CapabilityRegeneration.get(event.getPlayer()).synchronise();
 	}
 	
 	@SubscribeEvent
 	public void onDeathEvent(LivingDeathEvent e) {
 		if (e.getEntityLiving() instanceof EntityPlayer) {
-			CapabilityRegeneration.getForPlayer((EntityPlayer) e.getEntityLiving()).synchronise();
-		}
-	}
-	
-	@SubscribeEvent
-	public void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-		if (event.getObject() instanceof EntityPlayer) {
-			System.out.println("ATTEMPTED TO REGISTER ON: " + FMLEnvironment.dist + " " + event.getObject());
-			event.addCapability(CapabilityRegeneration.CAP_REGEN_ID, new ICapabilitySerializable<NBTTagCompound>() {
-				final CapabilityRegeneration regenCap = new CapabilityRegeneration((EntityPlayer) event.getObject());
-				
-				final LazyOptional<CapabilityRegeneration> regenCapInstance = LazyOptional.of(() -> regenCap);
-				
-				@Override
-				public NBTTagCompound serializeNBT() {
-					return regenCap.serializeNBT();
-				}
-				
-				@Override
-				public void deserializeNBT(NBTTagCompound nbt) {
-					regenCap.deserializeNBT(nbt);
-				}
-				
-				@Nullable
-				@SuppressWarnings("unchecked")
-				@Override
-				public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-					if (capability == CapabilityRegeneration.CAPABILITY)
-						return (LazyOptional<T>) regenCapInstance;
-					return LazyOptional.empty();
-				}
-			});
+			CapabilityRegeneration.get((EntityPlayer) e.getEntityLiving()).synchronise();
 		}
 	}
 	
@@ -133,8 +100,7 @@ public class RegenEventHandler {
 	public void onPunchBlock(PlayerInteractEvent.LeftClickBlock e) {
 		if (e.getEntityPlayer().world.isRemote)
 			return;
-		CapabilityRegeneration.getForPlayer(e.getEntityPlayer()).getStateManager().onPunchBlock(e);
-		System.out.println("ASFSDFDSFSDFSDFSD");
+		CapabilityRegeneration.get(e.getEntityPlayer()).getStateManager().onPunchBlock(e);
 	}
 	
 	
@@ -144,7 +110,7 @@ public class RegenEventHandler {
 		System.out.println(trueSource);
 		if (trueSource instanceof EntityPlayer && event.getEntityLiving() instanceof EntityLiving) {
 			EntityPlayer player = (EntityPlayer) trueSource;
-			CapabilityRegeneration.getForPlayer(player).getStateManager().onPunchEntity(event);
+			CapabilityRegeneration.get(player).getStateManager().onPunchEntity(event);
 			return;
 		}
 		
@@ -152,7 +118,7 @@ public class RegenEventHandler {
 			return;
 		
 		EntityPlayer player = (EntityPlayer) event.getEntity();
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+		IRegeneration cap = CapabilityRegeneration.get(player);
 		
 		cap.setDeathSource(event.getSource().getDeathMessage(player).getUnformattedComponentText());
 		
@@ -186,7 +152,7 @@ public class RegenEventHandler {
 	@SubscribeEvent
 	public void onKnockback(LivingKnockBackEvent event) {
 		if (event.getEntityLiving() instanceof EntityPlayer) {
-			if (CapabilityRegeneration.getForPlayer((EntityPlayer) event.getEntityLiving()).getState() == RegenState.REGENERATING) {
+			if (CapabilityRegeneration.get((EntityPlayer) event.getEntityLiving()).getState() == RegenState.REGENERATING) {
 				event.setCanceled(true);
 			}
 		}
@@ -223,17 +189,17 @@ public class RegenEventHandler {
 	public void onPlayerClone(PlayerEvent.Clone event) {
 		Capability.IStorage<IRegeneration> storage = CapabilityRegeneration.CAPABILITY.getStorage();
 		
-		IRegeneration oldCap = CapabilityRegeneration.getForPlayer(event.getOriginal());
-		IRegeneration newCap = CapabilityRegeneration.getForPlayer(event.getEntityPlayer());
+		IRegeneration oldCap = CapabilityRegeneration.get(event.getOriginal());
+		IRegeneration newCap = CapabilityRegeneration.get(event.getEntityPlayer());
 		
 		NBTTagCompound nbt = (NBTTagCompound) storage.writeNBT(CapabilityRegeneration.CAPABILITY, oldCap, null);
 		storage.readNBT(CapabilityRegeneration.CAPABILITY, newCap, null, nbt);
-		CapabilityRegeneration.getForPlayer(event.getEntityPlayer()).synchronise();
+		CapabilityRegeneration.get(event.getEntityPlayer()).synchronise();
 	}
 	
 	@SubscribeEvent
 	public void playerTracking(PlayerEvent.StartTracking event) {
-		CapabilityRegeneration.getForPlayer(event.getEntityPlayer()).synchronise();
+		CapabilityRegeneration.get(event.getEntityPlayer()).synchronise();
 	}
 	
 }

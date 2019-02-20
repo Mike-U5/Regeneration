@@ -10,6 +10,7 @@ import me.suff.regeneration.client.skinhandling.SkinChangingHandler;
 import me.suff.regeneration.common.entity.EntityItemOverride;
 import me.suff.regeneration.common.entity.EntityLindos;
 import me.suff.regeneration.util.FileUtil;
+import me.suff.regeneration.util.LimbManipulationUtil;
 import micdoodle8.mods.galacticraft.api.client.tabs.InventoryTabVanilla;
 import micdoodle8.mods.galacticraft.api.client.tabs.TabRegistry;
 import net.minecraft.client.Minecraft;
@@ -32,6 +33,7 @@ public class ClientProxy extends ServerProxy {
 		MinecraftForge.EVENT_BUS.register(new SkinChangingHandler());
 		RenderingRegistry.registerEntityRenderingHandler(EntityItemOverride.class, RenderItemOverride::new);
 		RenderingRegistry.registerEntityRenderingHandler(EntityLindos.class, RenderLindos::new);
+		MinecraftForge.EVENT_BUS.register(new LimbManipulationUtil());
 	}
 	
 	@Override

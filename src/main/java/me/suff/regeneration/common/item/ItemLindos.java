@@ -116,7 +116,7 @@ public class ItemLindos extends ItemOverrideBase {
 		if (!worldIn.isRemote) {
 			//Entiies around
 			worldIn.getEntitiesWithinAABB(EntityPlayer.class, entityIn.getBoundingBox().expand(10, 10, 10)).forEach(player -> {
-				IRegeneration data = CapabilityRegeneration.getForPlayer((EntityPlayer) entityIn);
+				IRegeneration data = CapabilityRegeneration.get((EntityPlayer) entityIn);
 				if (data.getState() == RegenState.REGENERATING) {
 					if (worldIn.rand.nextInt(100) > 50 && isSelected) {
 						setAmount(stack, getAmount(stack) + 1);
@@ -128,7 +128,7 @@ public class ItemLindos extends ItemOverrideBase {
 			if (entityIn instanceof EntityPlayer) {
 				EntityPlayer player = (EntityPlayer) entityIn;
 				if (isSelected) {
-					if (CapabilityRegeneration.getForPlayer(player).areHandsGlowing() && player.ticksExisted % 40 == 0) {
+					if (CapabilityRegeneration.get(player).areHandsGlowing() && player.ticksExisted % 40 == 0) {
 						setAmount(stack, getAmount(stack) + 2);
 					}
 				}
@@ -174,7 +174,7 @@ public class ItemLindos extends ItemOverrideBase {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
 		ItemStack stack = player.getHeldItem(handIn);
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+		IRegeneration cap = CapabilityRegeneration.get(player);
 		if (!worldIn.isRemote) {
 			
 			//If the player is in POST or Regenerating, stop them from drinking it

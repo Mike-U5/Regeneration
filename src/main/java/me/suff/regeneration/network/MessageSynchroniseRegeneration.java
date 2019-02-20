@@ -1,15 +1,11 @@
 package me.suff.regeneration.network;
 
-import io.netty.buffer.ByteBuf;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -45,7 +41,7 @@ public class MessageSynchroniseRegeneration {
 		public static void handle(MessageSynchroniseRegeneration message, Supplier<NetworkEvent.Context> ctx) {
 			EntityPlayer player = Minecraft.getInstance().world.getPlayerEntityByUUID(message.player);
 			if (player != null)
-				Minecraft.getInstance().addScheduledTask(() -> CapabilityRegeneration.getForPlayer(player).deserializeNBT(message.data));
+				Minecraft.getInstance().addScheduledTask(() -> CapabilityRegeneration.get(player).deserializeNBT(message.data));
 			ctx.get().setPacketHandled(true);
 		}
 	}

@@ -1,6 +1,5 @@
 package me.suff.regeneration.network;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import me.suff.regeneration.client.skinhandling.SkinInfo;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
@@ -9,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
-import javax.naming.Context;
 import java.util.function.Supplier;
 
 /**
@@ -43,7 +41,7 @@ public class MessageUpdateSkin {
 		public static void handle(MessageUpdateSkin message, Supplier<NetworkEvent.Context> ctx){
 			ctx.get().getSender().getServerWorld().addScheduledTask(() -> {
 				EntityPlayerMP player = ctx.get().getSender();
-				IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+				IRegeneration cap = CapabilityRegeneration.get(player);
 				cap.setEncodedSkin(message.encodedSkin.readByteArray());
 				if (message.isAlex) {
 					cap.setSkinType(SkinInfo.SkinType.ALEX.name());

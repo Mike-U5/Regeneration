@@ -15,7 +15,6 @@ import me.suff.regeneration.util.RegenState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
@@ -110,12 +109,12 @@ public class SkinChangingHandler {
 			return;
 		
 		if (RegenConfig.CONFIG.changeMySkin.get()) {
-			boolean isAlex = CapabilityRegeneration.getForPlayer(player).getPreferredModel().isAlex();
+			boolean isAlex = CapabilityRegeneration.get(player).getPreferredModel().isAlex();
 			File skin = SkinChangingHandler.chooseRandomSkin(random, isAlex);
 			RegenerationMod.LOG.info(skin.getName() + " was choosen");
 			BufferedImage image = ImageIO.read(skin);
 			byte[] pixelData = SkinChangingHandler.imageToPixelData(image);
-			CapabilityRegeneration.getForPlayer(player).setEncodedSkin(pixelData);
+			CapabilityRegeneration.get(player).setEncodedSkin(pixelData);
 			if (pixelData.length >= 32767) {
 				ClientUtil.sendSkinResetPacket();
 				RegenerationMod.LOG.error("CLIENT TRIED TO SEND IMAGE THAT EXCEEDS PERMITTED REQUIREMENTS");
@@ -151,7 +150,7 @@ public class SkinChangingHandler {
 	 * @throws IOException
 	 */
 	private static SkinInfo getSkin(AbstractClientPlayer player, IRegeneration data) throws IOException {
-		byte[] encodedSkin = CapabilityRegeneration.getForPlayer(player).getEncodedSkin();
+		byte[] encodedSkin = CapabilityRegeneration.get(player).getEncodedSkin();
 		ResourceLocation resourceLocation;
 		SkinInfo.SkinType skinType = null;
 		
@@ -173,7 +172,7 @@ public class SkinChangingHandler {
 				ResourceLocation tempLoc = new ResourceLocation(player.getName() + "_skin_" + System.currentTimeMillis());
 				Minecraft.getInstance().getTextureManager().loadTexture(tempLoc, new DynamicImage12(bufferedImage));
 				resourceLocation = tempLoc;
-				skinType = CapabilityRegeneration.getForPlayer(player).getSkinType();
+				skinType = CapabilityRegeneration.get(player).getSkinType();
 			}
 		}
 		
@@ -258,7 +257,7 @@ public class SkinChangingHandler {
 	public void onRenderPlayer(RenderPlayerEvent.Pre e) {
 		if (MinecraftForgeClient.getRenderPass() == -1) return; //Don't do this hacky skin shit in inventory
 		AbstractClientPlayer player = (AbstractClientPlayer) e.getEntityPlayer();
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+		IRegeneration cap = CapabilityRegeneration.get(player);
 		
 		if (player.ticksExisted == 20) {
 			SkinInfo oldSkinInfo = PLAYER_SKINS.get(player.getUniqueID());
@@ -282,7 +281,7 @@ public class SkinChangingHandler {
 	@SubscribeEvent
 	public void onRenderPlayer(RenderPlayerEvent.Post e) {
 		AbstractClientPlayer player = (AbstractClientPlayer) e.getEntityPlayer();
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+		IRegeneration cap = CapabilityRegeneration.get(player);
 		
 		if (cap.getState() == RegenState.REGENERATING) {
 			cap.getType().getRenderer().onRenderRegeneratingPlayerPost(cap.getType(), e, cap);

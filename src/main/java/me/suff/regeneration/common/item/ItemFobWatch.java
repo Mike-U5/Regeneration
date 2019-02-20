@@ -82,7 +82,7 @@ public class ItemFobWatch extends ItemOverrideBase {
 	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+		IRegeneration cap = CapabilityRegeneration.get(player);
 		ItemStack stack = player.getHeldItem(hand);
 		
 		if (!player.isSneaking()) { // transferring watch->player

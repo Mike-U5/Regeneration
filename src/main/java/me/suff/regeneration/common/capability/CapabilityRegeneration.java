@@ -24,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
@@ -33,8 +34,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -55,9 +58,10 @@ import java.util.Map;
  */
 public class CapabilityRegeneration implements IRegeneration {
 	
+	public static final ResourceLocation CAP_REGEN_ID = new ResourceLocation(RegenerationMod.MODID, "regeneration");
+	
 	@CapabilityInject(IRegeneration.class)
 	public static final Capability<IRegeneration> CAPABILITY = null;
-	public static final ResourceLocation CAP_REGEN_ID = new ResourceLocation(RegenerationMod.MODID, "regeneration");
 	
 	private final EntityPlayer player;
 	private final RegenerationStateManager stateManager;
@@ -96,8 +100,8 @@ public class CapabilityRegeneration implements IRegeneration {
 	}
 	
 	@Nonnull
-	public static IRegeneration getForPlayer(EntityPlayer player) {
-		return player.getCapability(CapabilityRegeneration.CAPABILITY).orElseThrow(() -> new RuntimeException("well, I've fucked up somewhere"));
+	public static IRegeneration get(EntityPlayer player) {
+		return player.getCapability(CAPABILITY, null).orElseThrow(() -> new RuntimeException("Capability not attached! " + player.world.isRemote));
 	}
 	
 	@Override
@@ -660,6 +664,55 @@ public class CapabilityRegeneration implements IRegeneration {
 					throw new IllegalStateException("Illegal hand glow timer transition");
 				
 				handGlowTimer = new DebuggableScheduledAction(transition, player, callback, nbt.getLong("handGlowScheduledTicks"));
+			}
+		}
+	}
+	
+	public static void init(){
+		System.out.println("AAAAAAAAAAAAAAAAAAAA" + FMLEnvironment.dist);
+		CapabilityManager.INSTANCE.register(IRegeneration.class, new Capability.IStorage<IRegeneration>() {
+			@Nullable
+			@Override
+			public INBTBase writeNBT(Capability<IRegeneration> capability, IRegeneration instance, EnumFacing side) {
+				return null;
+			}
+			
+			@Override
+			public void readNBT(Capability<IRegeneration> capability, IRegeneration instance, EnumFacing side, INBTBase nbt) {
+			
+			}
+		}, () -> null);
+		MinecraftForge.EVENT_BUS.register(new EventHandlers());
+	}
+	
+	static class EventHandlers {
+		@SubscribeEvent
+		public void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
+			if (event.getObject() instanceof EntityPlayer) {
+				event.addCapability(CapabilityRegeneration.CAP_REGEN_ID, new ICapabilitySerializable<NBTTagCompound>() {
+					final CapabilityRegeneration extensionContainer = new CapabilityRegeneration((EntityPlayer) event.getObject());
+					
+					final LazyOptional<CapabilityRegeneration> extensionContainerInstance = LazyOptional.of(() -> extensionContainer);
+					
+					@Override
+					public NBTTagCompound serializeNBT() {
+						return extensionContainer.serializeNBT();
+					}
+					
+					@Override
+					public void deserializeNBT(NBTTagCompound nbt) {
+						extensionContainer.deserializeNBT(nbt);
+					}
+					
+					@Nullable
+					@SuppressWarnings("unchecked")
+					@Override
+					public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+						if (capability == CAPABILITY)
+							return (LazyOptional<T>) extensionContainerInstance;
+						return LazyOptional.empty();
+					}
+				});
 			}
 		}
 	}

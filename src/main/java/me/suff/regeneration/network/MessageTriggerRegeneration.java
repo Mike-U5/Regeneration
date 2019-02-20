@@ -1,10 +1,8 @@
 package me.suff.regeneration.network;
 
-import io.netty.buffer.ByteBuf;
 import me.suff.regeneration.RegenerationMod;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
 import me.suff.regeneration.common.capability.IRegeneration;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -42,7 +40,7 @@ public class MessageTriggerRegeneration {
 			ctx.get().getSender().getServerWorld().addScheduledTask(() -> {
 				EntityPlayerMP player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUUID(message.player);
 				RegenerationMod.DEBUGGER.getChannelFor(player).out("Regeneration keybind pressed");
-				IRegeneration regen = CapabilityRegeneration.getForPlayer(player);
+				IRegeneration regen = CapabilityRegeneration.get(player);
 				
 				if (!regen.getState().isGraceful()) {
 					RegenerationMod.DEBUGGER.getChannelFor(player).warn("Trigger packet was sent when not in a graceful period");

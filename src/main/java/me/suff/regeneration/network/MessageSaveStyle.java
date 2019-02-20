@@ -34,7 +34,7 @@ public class MessageSaveStyle {
 	public static class Handler {
 		public static void handle(MessageSaveStyle message, Supplier<NetworkEvent.Context> ctx) {
 			ctx.get().getSender().getServerWorld().addScheduledTask(() -> {
-				IRegeneration cap = CapabilityRegeneration.getForPlayer(ctx.get().getSender());
+				IRegeneration cap = CapabilityRegeneration.get(ctx.get().getSender());
 				cap.setStyle(message.style);
 				cap.synchronise();
 				ctx.get().setPacketHandled(true);

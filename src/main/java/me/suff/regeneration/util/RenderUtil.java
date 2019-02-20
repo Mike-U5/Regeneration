@@ -128,7 +128,7 @@ public class RenderUtil {
 		GlStateManager.disableLighting();
 		GlStateManager.disableCull();
 		GlStateManager.enableBlend();
-	//	GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_CONSTANT_ALPHA);
+		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, 0x8004);
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569F);
 		setLightmapTextureCoords(240, 240);
 	}

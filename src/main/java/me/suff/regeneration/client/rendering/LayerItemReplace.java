@@ -17,7 +17,7 @@ public class LayerItemReplace extends LayerHeldItem {
 	public void render(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scalef) {
 		if (entitylivingbaseIn instanceof EntityPlayer) {
 			EntityPlayer entityPlayer = (EntityPlayer) entitylivingbaseIn;
-			if (CapabilityRegeneration.getForPlayer(entityPlayer).getState() != RegenState.REGENERATING) {
+			if (CapabilityRegeneration.get(entityPlayer).getState() != RegenState.REGENERATING) {
 				super.render(entitylivingbaseIn, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scalef);
 			}
 			

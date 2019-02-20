@@ -84,7 +84,7 @@ public class GuiSkinCustomizer extends GuiContainer {
 			}
 		});
 		
-		choices = CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player).getPreferredModel();
+		choices = CapabilityRegeneration.get(Minecraft.getInstance().player).getPreferredModel();
 	}
 	
 	@Override

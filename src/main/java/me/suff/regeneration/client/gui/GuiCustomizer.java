@@ -46,7 +46,7 @@ public class GuiCustomizer extends GuiContainer {
 		int cx = (width - xSize) / 2;
 		int cy = (height - ySize) / 2;
 		
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(mc.player);
+		IRegeneration cap = CapabilityRegeneration.get(mc.player);
 		initialPrimary = cap.getPrimaryColor();
 		initialSecondary = cap.getSecondaryColor();
 		
@@ -161,12 +161,12 @@ public class GuiCustomizer extends GuiContainer {
 		if (RegenConfig.CONFIG.infiniteRegeneration.get())
 			str = new TextComponentTranslation("regeneration.gui.infinite_regenerations").getFormattedText(); // TODO this should be optimized
 		else
-			str = new TextComponentTranslation("regeneration.gui.remaining_regens.status").getFormattedText() + " " + CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player).getRegenerationsLeft();
+			str = new TextComponentTranslation("regeneration.gui.remaining_regens.status").getFormattedText() + " " + CapabilityRegeneration.get(Minecraft.getInstance().player).getRegenerationsLeft();
 		
 		length = mc.fontRenderer.getStringWidth(str);
 		fontRenderer.drawString(str, cx + 86 - length / 2, cy + 21, Color.DARK_GRAY.getRGB());
 		
-		TextComponentTranslation traitLang = new TextComponentTranslation(DnaHandler.getDnaEntry(CapabilityRegeneration.getForPlayer(mc.player).getDnaType()).getLangKey());
+		TextComponentTranslation traitLang = new TextComponentTranslation(DnaHandler.getDnaEntry(CapabilityRegeneration.get(mc.player).getDnaType()).getLangKey());
 		fontRenderer.drawString(traitLang.getUnformattedComponentText(), cx + 86 - length / 2, cy + 30, Color.DARK_GRAY.getRGB());
 	}
 	

@@ -1,6 +1,5 @@
 package me.suff.regeneration.client;
 
-import me.suff.regeneration.RegenerationMod;
 import me.suff.regeneration.client.skinhandling.SkinChangingHandler;
 import me.suff.regeneration.client.skinhandling.SkinInfo;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
@@ -9,7 +8,6 @@ import me.suff.regeneration.handlers.RegenObjects;
 import me.suff.regeneration.util.ClientUtil;
 import me.suff.regeneration.util.EnumCompatModids;
 import me.suff.regeneration.util.RenderUtil;
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.SimpleSound;
@@ -39,7 +37,6 @@ import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.Random;
 import java.util.UUID;
@@ -71,7 +68,7 @@ public class ClientEventHandler {
 		if (player.ticksExisted == 50) {
 			
 			UUID clientUUID = Minecraft.getInstance().player.getUniqueID();
-			IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+			IRegeneration cap = CapabilityRegeneration.get(player);
 			
 			if (cap.areHandsGlowing()) {
 				ClientUtil.playSound(cap.getPlayer(), RegenObjects.Sounds.HAND_GLOW.getRegistryName(), SoundCategory.PLAYERS, true, () -> !cap.areHandsGlowing(), 0.5F);
@@ -104,7 +101,7 @@ public class ClientEventHandler {
 		if (player.getHeldItemMainhand().getItem() != Items.AIR || mc.gameSettings.thirdPersonView > 0)
 			return;
 		
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
+		IRegeneration cap = CapabilityRegeneration.get(player);
 		if (!cap.areHandsGlowing())
 			return;
 		
@@ -135,7 +132,7 @@ public class ClientEventHandler {
 		if (event.getType() != RenderGameOverlayEvent.ElementType.ALL)
 			return;
 		
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player);
+		IRegeneration cap = CapabilityRegeneration.get(Minecraft.getInstance().player);
 		String warning = null;
 		
 		switch (cap.getState()) {
@@ -168,13 +165,13 @@ public class ClientEventHandler {
 			ISound sound = SimpleSound.getRecord(SoundEvents.ENTITY_GENERIC_EXPLODE, 1F, 0.2F);
 			mc.world.playerEntities.forEach(player -> {
 				if (mc.player != player && mc.player.getDistance(player) < 40) {
-					if (CapabilityRegeneration.getForPlayer(player).getState().equals(REGENERATING)) {
+					if (CapabilityRegeneration.get(player).getState().equals(REGENERATING)) {
 						e.setResultSound(sound);
 					}
 				}
 			});
 			
-			if (CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player).getState() == REGENERATING) {
+			if (CapabilityRegeneration.get(Minecraft.getInstance().player).getState() == REGENERATING) {
 				e.setResultSound(sound);
 			}
 		}
@@ -184,7 +181,7 @@ public class ClientEventHandler {
 	
 	@SubscribeEvent
 	public void onSetupFogDensity(EntityViewRenderEvent.RenderFogEvent.FogDensity event) {
-		IRegeneration data = CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player);
+		IRegeneration data = CapabilityRegeneration.get(Minecraft.getInstance().player);
 		if(data == null) return;
 		if (data.getState() == GRACE_CRIT) {
 			GlStateManager.fogMode(GlStateManager.FogMode.EXP);
@@ -200,7 +197,7 @@ public class ClientEventHandler {
 	public void onClientChatRecieved(ClientChatReceivedEvent e) {
 		EntityPlayerSP player = Minecraft.getInstance().player;
 		if (e.getType() != ChatType.CHAT) return;
-		if (CapabilityRegeneration.getForPlayer(player).getState() != POST) return;
+		if (CapabilityRegeneration.get(player).getState() != POST) return;
 		
 		if (player.world.rand.nextBoolean()) {
 			String message = e.getMessage().getUnformattedComponentText();
@@ -234,7 +231,7 @@ public class ClientEventHandler {
 		if (Minecraft.getInstance().player == null)
 			return;
 		
-		IRegeneration cap = CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player);
+		IRegeneration cap = CapabilityRegeneration.get(Minecraft.getInstance().player);
 		if (cap.getState() == REGENERATING) { // locking user
 			MovementInput moveType = e.getMovementInput();
 			moveType.rightKeyDown = false;

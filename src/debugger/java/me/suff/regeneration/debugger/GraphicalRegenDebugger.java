@@ -85,7 +85,7 @@ public class GraphicalRegenDebugger implements IRegenDebugger {
 		
 		if (ev.getEntityLiving() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) ev.getEntityLiving();
-			EventQueue.invokeLater(() -> playerTabz.get(player.getGameProfile()).updateLabels(CapabilityRegeneration.getForPlayer(player)));
+			EventQueue.invokeLater(() -> playerTabz.get(player.getGameProfile()).updateLabels(CapabilityRegeneration.get(player)));
 		}
 	}
 	

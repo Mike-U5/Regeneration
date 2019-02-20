@@ -68,7 +68,7 @@ public class DnaHandler {
 	
 	@SubscribeEvent
 	public static void onXpPickup(PlayerPickupXpEvent e) {
-		IRegeneration data = CapabilityRegeneration.getForPlayer(e.getEntityPlayer());
+		IRegeneration data = CapabilityRegeneration.get(e.getEntityPlayer());
 		IDna dna = DnaHandler.getDnaEntry(data.getDnaType());
 		if (dna.getRegistryName().equals(DnaHandler.DNA_DUMB.getRegistryName()) && data.isDnaActive()) {
 			e.getOrb().xpValue *= 0.5;
@@ -79,7 +79,7 @@ public class DnaHandler {
 	public static void onJump(LivingEvent.LivingJumpEvent event) {
 		if (event.getEntityLiving() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-			IRegeneration data = CapabilityRegeneration.getForPlayer(player);
+			IRegeneration data = CapabilityRegeneration.get(player);
 			if (player.world.isRemote) return;
 			if (data.isDnaActive() && data.getDnaType().equals(DNA_ATHLETE.getRegistryName())) {
 				player.motionY += 0.1D;

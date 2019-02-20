@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = RegenerationMod.MODID, bus=Mod.EventBusSubscriber.Bus.MOD)
 public class LimbManipulationUtil {
 	
 	public static LimbManipulator getLimbManipulator(RenderPlayer renderPlayer, Limb limb) {
@@ -73,7 +72,7 @@ public class LimbManipulationUtil {
 	}
 	
 	@SubscribeEvent
-	public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
+	public void onRenderPlayerPost(RenderPlayerEvent.Post event) {
 		if (MinecraftForgeClient.getRenderPass() == -1) // rendering in inventory
 			return;
 		

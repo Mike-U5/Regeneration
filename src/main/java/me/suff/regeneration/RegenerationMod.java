@@ -2,10 +2,6 @@ package me.suff.regeneration;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.suff.regeneration.client.RegenKeyBinds;
-import me.suff.regeneration.client.rendering.entity.RenderItemOverride;
-import me.suff.regeneration.client.rendering.entity.RenderLindos;
-import me.suff.regeneration.client.skinhandling.SkinChangingHandler;
 import me.suff.regeneration.common.CommandRegen;
 import me.suff.regeneration.common.advancements.RegenTriggers;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
@@ -16,38 +12,29 @@ import me.suff.regeneration.handlers.ActingForwarder;
 import me.suff.regeneration.handlers.RegenEventHandler;
 import me.suff.regeneration.network.NetworkHandler;
 import me.suff.regeneration.proxy.ClientProxy;
-import me.suff.regeneration.proxy.ServerProxy;
 import me.suff.regeneration.proxy.IProxy;
+import me.suff.regeneration.proxy.ServerProxy;
 import me.suff.regeneration.util.PlayerUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.INBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 //TESTING add language file tests
@@ -63,10 +50,10 @@ public class RegenerationMod {
 	public static IRegenDebugger DEBUGGER;
 	public static Logger LOG = LogManager.getLogger(NAME);
 	
-	public static final IProxy PROXY = DistExecutor.runForDist( () -> ClientProxy::new, () -> ServerProxy::new );
+	public static final IProxy PROXY = DistExecutor.runForDist(() -> ClientProxy::new, () -> ServerProxy::new);
 	
 	public RegenerationMod() {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, RegenConfig.CONFIG_SPEC);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, RegenConfig.CONFIG_SPEC);
 		INSTANCE = this;
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 		
@@ -74,26 +61,10 @@ public class RegenerationMod {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
 		
 		MinecraftForge.EVENT_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(new CapabilityRegeneration());
 		MinecraftForge.EVENT_BUS.register(new RegenEventHandler());
 	}
 	
 	private void setup(final FMLCommonSetupEvent event) {
-		
-		CapabilityManager.INSTANCE.register(IRegeneration.class, new Capability.IStorage<IRegeneration>() {
-			@Nullable
-			@Override
-			public INBTBase writeNBT(Capability<IRegeneration> capability, IRegeneration instance, EnumFacing side) {
-				return instance.serializeNBT();
-			}
-			
-			@Override
-			public void readNBT(Capability<IRegeneration> capability, IRegeneration instance, EnumFacing side, INBTBase nbt) {
-				instance.deserializeNBT(nbt instanceof NBTTagCompound ? (NBTTagCompound) nbt : new NBTTagCompound());
-			}
-		}, CapabilityRegeneration::new);
-		
-		
 		ActingForwarder.init();
 		RegenTriggers.init();
 		NetworkHandler.init();
@@ -101,6 +72,7 @@ public class RegenerationMod {
 		DnaHandler.init();
 		PlayerUtil.createPostList();
 		PROXY.preInit();
+		CapabilityRegeneration.init();
 	}
 	
 	private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -111,7 +83,7 @@ public class RegenerationMod {
 	public void onServerStarting(FMLServerStartingEvent event) {
 		CommandRegen.register(event.getCommandDispatcher());
 	}
-  
+	
 	private void processIMC(final InterModProcessEvent event) {
 		PROXY.postInit();
 	}
