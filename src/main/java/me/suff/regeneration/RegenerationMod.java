@@ -2,6 +2,11 @@ package me.suff.regeneration;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import me.suff.regeneration.client.RegenKeyBinds;
+import me.suff.regeneration.client.rendering.entity.RenderItemOverride;
+import me.suff.regeneration.client.rendering.entity.RenderLindos;
+import me.suff.regeneration.client.skinhandling.SkinChangingHandler;
+import me.suff.regeneration.common.CommandRegen;
 import me.suff.regeneration.common.advancements.RegenTriggers;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
 import me.suff.regeneration.common.capability.IRegeneration;
@@ -22,11 +27,14 @@ import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -92,6 +100,11 @@ public class RegenerationMod {
 		PROXY.init();
 	}
 	
+	@SubscribeEvent
+	public void onServerStarting(FMLServerStartingEvent event) {
+		CommandRegen.register(event.getCommandDispatcher());
+	}
+  
 	private void processIMC(final InterModProcessEvent event) {
 		PROXY.postInit();
 	}
