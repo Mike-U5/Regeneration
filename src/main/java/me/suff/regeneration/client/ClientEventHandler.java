@@ -54,7 +54,7 @@ public class ClientEventHandler {
 	
 	
 	@SubscribeEvent
-	public static void onGui(InputUpdateEvent tickEvent) {
+	public void onGui(InputUpdateEvent tickEvent) {
 		if (EnumCompatModids.LCCORE.isLoaded()) return;
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.currentScreen == null && minecraft.player != null) {
@@ -63,7 +63,7 @@ public class ClientEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onSortofWorldJoin(LivingEvent.LivingUpdateEvent e) {
+	public void onSortofWorldJoin(LivingEvent.LivingUpdateEvent e) {
 		if (!(e.getEntity() instanceof EntityPlayer) || Minecraft.getInstance().player == null)
 			return;
 		
@@ -90,7 +90,7 @@ public class ClientEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onRenderHand(RenderHandEvent e) {
+	public void onRenderHand(RenderHandEvent e) {
 		Minecraft mc = Minecraft.getInstance();
 		EntityPlayerSP player = Minecraft.getInstance().player;
 		
@@ -131,7 +131,7 @@ public class ClientEventHandler {
 	
 	@SuppressWarnings("incomplete-switch")
 	@SubscribeEvent
-	public static void onRenderGui(RenderGameOverlayEvent.Post event) {
+	public void onRenderGui(RenderGameOverlayEvent.Post event) {
 		if (event.getType() != RenderGameOverlayEvent.ElementType.ALL)
 			return;
 		
@@ -159,7 +159,7 @@ public class ClientEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onPlaySound(PlaySoundEvent e) {
+	public void onPlaySound(PlaySoundEvent e) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null || mc.world == null)
 			return;
@@ -183,7 +183,7 @@ public class ClientEventHandler {
 	
 	
 	@SubscribeEvent
-	public static void onSetupFogDensity(EntityViewRenderEvent.RenderFogEvent.FogDensity event) {
+	public void onSetupFogDensity(EntityViewRenderEvent.RenderFogEvent.FogDensity event) {
 		IRegeneration data = CapabilityRegeneration.getForPlayer(Minecraft.getInstance().player);
 		if(data == null) return;
 		if (data.getState() == GRACE_CRIT) {
@@ -197,7 +197,7 @@ public class ClientEventHandler {
 	
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public static void onClientChatRecieved(ClientChatReceivedEvent e) {
+	public void onClientChatRecieved(ClientChatReceivedEvent e) {
 		EntityPlayerSP player = Minecraft.getInstance().player;
 		if (e.getType() != ChatType.CHAT) return;
 		if (CapabilityRegeneration.getForPlayer(player).getState() != POST) return;
@@ -225,12 +225,12 @@ public class ClientEventHandler {
 		}
 	}
 	
-	public static String getColoredText(String msg) {
+	public String getColoredText(String msg) {
 		return msg.replaceAll("&", String.valueOf('\u00a7'));
 	}
 	
 	@SubscribeEvent
-	public static void keyInput(InputUpdateEvent e) {
+	public void keyInput(InputUpdateEvent e) {
 		if (Minecraft.getInstance().player == null)
 			return;
 		
@@ -248,7 +248,7 @@ public class ClientEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onDeath(LivingDeathEvent e) {
+	public void onDeath(LivingDeathEvent e) {
 		if (e.getEntityLiving() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) e.getEntityLiving();
 			SkinChangingHandler.PLAYER_SKINS.remove(player.getUniqueID());
@@ -260,7 +260,7 @@ public class ClientEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onClientLeaveServer(GuiScreenEvent.InitGuiEvent e) {
+	public void onClientLeaveServer(GuiScreenEvent.InitGuiEvent e) {
 		if(Minecraft.getInstance().world == null) {
 			SkinChangingHandler.PLAYER_SKINS.clear();
 		}

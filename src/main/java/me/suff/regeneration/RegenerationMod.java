@@ -11,9 +11,11 @@ import me.suff.regeneration.handlers.ActingForwarder;
 import me.suff.regeneration.handlers.RegenEventHandler;
 import me.suff.regeneration.network.NetworkHandler;
 import me.suff.regeneration.proxy.ClientProxy;
-import me.suff.regeneration.proxy.CommonProxy;
+import me.suff.regeneration.proxy.ServerProxy;
 import me.suff.regeneration.proxy.IProxy;
 import me.suff.regeneration.util.PlayerUtil;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -22,6 +24,10 @@ import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -30,9 +36,11 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 //TESTING add language file tests
@@ -48,7 +56,7 @@ public class RegenerationMod {
 	public static IRegenDebugger DEBUGGER;
 	public static Logger LOG = LogManager.getLogger(NAME);
 	
-	public static final IProxy PROXY = DistExecutor.runForDist( () -> ClientProxy::new, () -> CommonProxy::new );
+	public static final IProxy PROXY = DistExecutor.runForDist( () -> ClientProxy::new, () -> ServerProxy::new );
 	
 	public RegenerationMod() {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, RegenConfig.CONFIG_SPEC);
@@ -95,5 +103,6 @@ public class RegenerationMod {
 	private void processIMC(final InterModProcessEvent event) {
 		PROXY.postInit();
 	}
+	
 	
 }

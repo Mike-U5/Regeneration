@@ -103,8 +103,6 @@ public class CapabilityRegeneration implements IRegeneration {
 	@Override
 	public void tick() {
 		
-	
-		
 		if (!didSetup && player.world.isRemote) {
 			NetworkHandler.sendToServer(new MessageSynchronisationRequest(player.getUniqueID(), player.dimension.getId()));
 			didSetup = true;
@@ -666,34 +664,4 @@ public class CapabilityRegeneration implements IRegeneration {
 		}
 	}
 	
-	@SubscribeEvent
-	public void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-		if (event.getObject() instanceof EntityPlayer) {
-			System.out.println("ATTEMPTED TO REGISTER ON: " + FMLEnvironment.dist);
-			event.addCapability(CapabilityRegeneration.CAP_REGEN_ID, new ICapabilitySerializable<NBTTagCompound>() {
-				final CapabilityRegeneration regenCap = new CapabilityRegeneration((EntityPlayer) event.getObject());
-				
-				final LazyOptional<CapabilityRegeneration> regenCapInstance = LazyOptional.of(() -> regenCap);
-				
-				@Override
-				public NBTTagCompound serializeNBT() {
-					return regenCap.serializeNBT();
-				}
-				
-				@Override
-				public void deserializeNBT(NBTTagCompound nbt) {
-					regenCap.deserializeNBT(nbt);
-				}
-				
-				@Nullable
-				@SuppressWarnings("unchecked")
-				@Override
-				public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-					if (capability == CapabilityRegeneration.CAPABILITY)
-						return (LazyOptional<T>) regenCapInstance;
-					return LazyOptional.empty();
-				}
-			});
-		}
-	}
 }

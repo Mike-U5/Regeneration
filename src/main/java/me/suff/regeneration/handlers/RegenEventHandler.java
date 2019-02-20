@@ -42,6 +42,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -92,6 +93,37 @@ public class RegenEventHandler {
 	public void onDeathEvent(LivingDeathEvent e) {
 		if (e.getEntityLiving() instanceof EntityPlayer) {
 			CapabilityRegeneration.getForPlayer((EntityPlayer) e.getEntityLiving()).synchronise();
+		}
+	}
+	
+	@SubscribeEvent
+	public void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
+		if (event.getObject() instanceof EntityPlayer) {
+			System.out.println("ATTEMPTED TO REGISTER ON: " + FMLEnvironment.dist + " " + event.getObject());
+			event.addCapability(CapabilityRegeneration.CAP_REGEN_ID, new ICapabilitySerializable<NBTTagCompound>() {
+				final CapabilityRegeneration regenCap = new CapabilityRegeneration((EntityPlayer) event.getObject());
+				
+				final LazyOptional<CapabilityRegeneration> regenCapInstance = LazyOptional.of(() -> regenCap);
+				
+				@Override
+				public NBTTagCompound serializeNBT() {
+					return regenCap.serializeNBT();
+				}
+				
+				@Override
+				public void deserializeNBT(NBTTagCompound nbt) {
+					regenCap.deserializeNBT(nbt);
+				}
+				
+				@Nullable
+				@SuppressWarnings("unchecked")
+				@Override
+				public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+					if (capability == CapabilityRegeneration.CAPABILITY)
+						return (LazyOptional<T>) regenCapInstance;
+					return LazyOptional.empty();
+				}
+			});
 		}
 	}
 	

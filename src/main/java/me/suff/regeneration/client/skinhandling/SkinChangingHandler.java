@@ -4,6 +4,7 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import io.netty.buffer.Unpooled;
 import me.suff.regeneration.RegenConfig;
 import me.suff.regeneration.RegenerationMod;
+import me.suff.regeneration.client.DynamicImage12;
 import me.suff.regeneration.common.capability.CapabilityRegeneration;
 import me.suff.regeneration.common.capability.IRegeneration;
 import me.suff.regeneration.network.MessageUpdateSkin;
@@ -21,6 +22,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -43,7 +45,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -51,11 +52,12 @@ import java.util.UUID;
 public class SkinChangingHandler {
 	
 	public static final File SKIN_DIRECTORY = new File("./mods/regeneration/skins/");
-	public static final Map<UUID, SkinInfo> PLAYER_SKINS = new HashMap<>();
 	public static final File SKIN_CACHE_DIRECTORY = new File("./mods/regeneration/skincache/" + Minecraft.getInstance().getSession().getProfile().getId() + "/skins");
 	public static final File SKIN_DIRECTORY_STEVE = new File(SKIN_DIRECTORY, "/steve");
 	public static final File SKIN_DIRECTORY_ALEX = new File(SKIN_DIRECTORY, "/alex");
-	public static final Logger SKIN_LOG = LogManager.getLogger(SkinChangingHandler.class); //TODO move to debugger
+	public static final Logger SKIN_LOG = LogManager.getLogger("Regeneration Skin Handler"); //TODO move to debugger
+	public static final Map<UUID, SkinInfo> PLAYER_SKINS = new HashMap<>();
+	public static final Map<UUID, SkinInfo.SkinType> TYPE_BACKUPS = new HashMap<>();
 	private static final Random RAND = new Random();
 	
 	/**
@@ -168,9 +170,9 @@ public class SkinChangingHandler {
 			if (bufferedImage == null) {
 				resourceLocation = DefaultPlayerSkin.getDefaultSkin(player.getUniqueID());
 			} else {
-				//TODO TEMP
-				resourceLocation = DefaultPlayerSkin.getDefaultSkin(player.getUniqueID());
-				//resourceLocation = Minecraft.getInstance().getTextureManager().getDynamicTextureLocation(player.getName() + "_skin", new DynamicTexture(bufferedImage));
+				ResourceLocation tempLoc = new ResourceLocation(player.getName() + "_skin_" + System.currentTimeMillis());
+				Minecraft.getInstance().getTextureManager().loadTexture(tempLoc, new DynamicImage12(bufferedImage));
+				resourceLocation = tempLoc;
 				skinType = CapabilityRegeneration.getForPlayer(player).getSkinType();
 			}
 		}
@@ -179,11 +181,8 @@ public class SkinChangingHandler {
 	}
 	
 	public static boolean isPlayersDefaultAlex(EntityPlayer player) {
-		Minecraft minecraft = Minecraft.getInstance();
-		Map map = minecraft.getSessionService().getTextures(minecraft.getSessionService().fillProfileProperties(player.getGameProfile(), false), false);
-		if (map.containsKey(MinecraftProfileTexture.Type.SKIN)) {
-			MinecraftProfileTexture profile = (MinecraftProfileTexture) map.get(MinecraftProfileTexture.Type.SKIN);
-			return (Objects.equals(profile.getMetadata("model"), "skim"));
+		if (TYPE_BACKUPS.containsKey(player.getUniqueID())) {
+			return TYPE_BACKUPS.get(player.getUniqueID()).getMojangType().equals("slim");
 		}
 		return true;
 	}
@@ -212,8 +211,8 @@ public class SkinChangingHandler {
 			
 			File file = new File(SKIN_CACHE_DIRECTORY, "cache-" + player.getUniqueID() + ".png");
 			ImageIO.write(image, "png", file);
-			//TODO TEMP
-			//return minecraft.getTextureManager().getDynamicTextureLocation(player.getName() + "_skin", new DynamicTexture(image));
+			 minecraft.getTextureManager().loadTexture(new ResourceLocation(player.getName() + "_skin"), new DynamicImage12(image));
+			return new ResourceLocation(player.getName() + "_skin_"+System.currentTimeMillis());
 		}
 		
 		return DefaultPlayerSkin.getDefaultSkinLegacy();
@@ -226,7 +225,10 @@ public class SkinChangingHandler {
 	 * @param texture - ResourceLocation of intended texture
 	 */
 	public static void setPlayerTexture(AbstractClientPlayer player, ResourceLocation texture) {
-		if (player.getLocationSkin() == texture) {
+		if (player.getLocationSkin() == texture || texture == null) {
+			if (texture == null) {
+				RegenerationMod.LOG.error("Skin data for " + player.getName() + "was null");
+			}
 			return;
 		}
 		NetworkPlayerInfo playerInfo = ObfuscationReflectionHelper.getPrivateValue(AbstractClientPlayer.class, player, 0);
@@ -240,6 +242,9 @@ public class SkinChangingHandler {
 	
 	public static void setPlayerSkinType(AbstractClientPlayer player, SkinInfo.SkinType skinType) {
 		if (skinType.getMojangType().equals(player.getSkinType())) return;
+		if (!TYPE_BACKUPS.containsKey(player.getUniqueID())) {
+			TYPE_BACKUPS.put(player.getUniqueID(), player.getSkinType().equals("slim") ? SkinInfo.SkinType.ALEX : SkinInfo.SkinType.STEVE);
+		}
 		NetworkPlayerInfo playerInfo = ObfuscationReflectionHelper.getPrivateValue(AbstractClientPlayer.class, player, 0);
 		ObfuscationReflectionHelper.setPrivateValue(NetworkPlayerInfo.class, playerInfo, skinType.getMojangType(), 5);
 	}
@@ -251,6 +256,7 @@ public class SkinChangingHandler {
 	 */
 	@SubscribeEvent
 	public void onRenderPlayer(RenderPlayerEvent.Pre e) {
+		if (MinecraftForgeClient.getRenderPass() == -1) return; //Don't do this hacky skin shit in inventory
 		AbstractClientPlayer player = (AbstractClientPlayer) e.getEntityPlayer();
 		IRegeneration cap = CapabilityRegeneration.getForPlayer(player);
 		
@@ -286,8 +292,11 @@ public class SkinChangingHandler {
 	
 	@SubscribeEvent
 	public void onRelog(EntityJoinWorldEvent e) {
-		if (e.getEntity() instanceof EntityPlayer) {
-			PLAYER_SKINS.remove(e.getEntity().getUniqueID());
+		if (e.getEntity() instanceof AbstractClientPlayer) {
+			AbstractClientPlayer clientPlayer = (AbstractClientPlayer) e.getEntity();
+			PLAYER_SKINS.remove(clientPlayer.getUniqueID());
+			TYPE_BACKUPS.remove(clientPlayer.getUniqueID());
+			TYPE_BACKUPS.put(clientPlayer.getUniqueID(), clientPlayer.getSkinType().equals("slim") ? SkinInfo.SkinType.ALEX : SkinInfo.SkinType.STEVE);
 		}
 	}
 	
