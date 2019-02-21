@@ -1,5 +1,6 @@
 package me.suff.regeneration.proxy;
 
+import me.suff.regeneration.client.ClientEventHandler;
 import me.suff.regeneration.client.RegenKeyBinds;
 import me.suff.regeneration.client.gui.InventoryTabRegeneration;
 import me.suff.regeneration.client.rendering.LayerFuzz;
@@ -34,6 +35,7 @@ public class ClientProxy extends ServerProxy {
 		RenderingRegistry.registerEntityRenderingHandler(EntityItemOverride.class, RenderItemOverride::new);
 		RenderingRegistry.registerEntityRenderingHandler(EntityLindos.class, RenderLindos::new);
 		MinecraftForge.EVENT_BUS.register(new LimbManipulationUtil());
+		MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
 	}
 	
 	@Override

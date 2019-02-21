@@ -15,6 +15,8 @@ import me.suff.regeneration.util.RegenState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
@@ -38,7 +40,10 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Native;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,6 +110,7 @@ public class SkinChangingHandler {
 	 * @throws IOException
 	 */
 	public static void sendSkinUpdate(Random random, EntityPlayer player) throws IOException {
+		System.out.println(CapabilityRegeneration.get(player).getEncodedSkin());
 		if (Minecraft.getInstance().player.getUniqueID() != player.getUniqueID())
 			return;
 		
@@ -169,9 +175,8 @@ public class SkinChangingHandler {
 			if (bufferedImage == null) {
 				resourceLocation = DefaultPlayerSkin.getDefaultSkin(player.getUniqueID());
 			} else {
-				ResourceLocation tempLoc = new ResourceLocation(player.getName() + "_skin_" + System.currentTimeMillis());
-				Minecraft.getInstance().getTextureManager().loadTexture(tempLoc, new DynamicImage12(bufferedImage));
-				resourceLocation = tempLoc;
+				File file = new File(SKIN_CACHE_DIRECTORY, "cache-" + player.getUniqueID() + ".png");
+				resourceLocation = Minecraft.getInstance().getTextureManager().getDynamicTextureLocation(player.getName()+"_skin", new DynamicTexture(NativeImage.read(new FileInputStream(file))));
 				skinType = CapabilityRegeneration.get(player).getSkinType();
 			}
 		}
@@ -210,8 +215,7 @@ public class SkinChangingHandler {
 			
 			File file = new File(SKIN_CACHE_DIRECTORY, "cache-" + player.getUniqueID() + ".png");
 			ImageIO.write(image, "png", file);
-			 minecraft.getTextureManager().loadTexture(new ResourceLocation(player.getName() + "_skin"), new DynamicImage12(image));
-			return new ResourceLocation(player.getName() + "_skin_"+System.currentTimeMillis());
+			return minecraft.getTextureManager().getDynamicTextureLocation(player.getName() + "_skin", new DynamicTexture(NativeImage.read(new FileInputStream(file))));
 		}
 		
 		return DefaultPlayerSkin.getDefaultSkinLegacy();
@@ -337,6 +341,10 @@ public class SkinChangingHandler {
 			}
 			return isAlex;
 		}
+	}
+	
+	public static ResourceLocation createNativeImage(EntityPlayer player, InputStream inputStream) throws IOException {
+		return Minecraft.getInstance().getTextureManager().getDynamicTextureLocation(player.getName()+"_skin_"+System.currentTimeMillis(), new DynamicTexture(NativeImage.read(inputStream)));
 	}
 	
 }

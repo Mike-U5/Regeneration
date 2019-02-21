@@ -260,6 +260,7 @@ public class ClientEventHandler {
 	public void onClientLeaveServer(GuiScreenEvent.InitGuiEvent e) {
 		if(Minecraft.getInstance().world == null) {
 			SkinChangingHandler.PLAYER_SKINS.clear();
+			SkinChangingHandler.TYPE_BACKUPS.clear();
 		}
 	}
 	

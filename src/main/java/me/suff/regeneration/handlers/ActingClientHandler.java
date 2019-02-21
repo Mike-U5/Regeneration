@@ -54,6 +54,7 @@ class ActingClientHandler implements IActingHandler {
 	public void onRegenTrigger(IRegeneration cap) {
 		if (Minecraft.getInstance().player.getUniqueID().equals(cap.getPlayer().getUniqueID())) {
 			try {
+				RegenerationMod.LOG.error("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 				SkinChangingHandler.sendSkinUpdate(cap.getPlayer().world.rand, cap.getPlayer());
 			} catch (IOException e) {
 				RegenerationMod.LOG.error(e.getMessage());

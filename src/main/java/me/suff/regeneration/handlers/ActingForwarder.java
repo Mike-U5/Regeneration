@@ -1,5 +1,6 @@
 package me.suff.regeneration.handlers;
 
+import me.suff.regeneration.RegenerationMod;
 import me.suff.regeneration.common.capability.IRegeneration;
 import me.suff.regeneration.network.MessageRegenStateEvent;
 import me.suff.regeneration.network.NetworkHandler;
@@ -18,7 +19,7 @@ public class ActingForwarder {
 	public static void init() {
 		register(ActingServerHandler.INSTANCE, Dist.DEDICATED_SERVER);
 		
-		if (!FMLEnvironment.dist.isClient()) {
+		if (FMLEnvironment.dist.isClient()) {
 			register(ActingClientHandler.INSTANCE, Dist.CLIENT);
 		}
 	}
@@ -33,6 +34,7 @@ public class ActingForwarder {
 	
 	public static void register(IActingHandler handler, Dist side) {
 		(side == Dist.CLIENT ? clientHandlers : serverHandlers).add(handler);
+		RegenerationMod.LOG.info("Registered %s on side %s", handler.getClass().getSimpleName(), side);
 	}
 	
 	public static void onRegenTick(IRegeneration cap) {

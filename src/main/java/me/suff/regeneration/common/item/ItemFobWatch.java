@@ -30,7 +30,6 @@ import net.minecraft.world.World;
 public class ItemFobWatch extends ItemOverrideBase {
 	
 	public ItemFobWatch() {
-		//TODO put back RegenConfig.CONFIG.regenCapacity.get()
 		super(new Item.Properties().defaultMaxDamage(12).group(ItemGroup.MISC));
 		addPropertyOverride(new ResourceLocation("open"), (stack, worldIn, entityIn) -> {
 			if (getStackTag(stack) == null || !getStackTag(stack).hasKey("open")) {

@@ -72,7 +72,6 @@ public class RegenerationMod {
 		DnaHandler.init();
 		PlayerUtil.createPostList();
 		PROXY.preInit();
-		CapabilityRegeneration.init();
 	}
 	
 	private void enqueueIMC(final InterModEnqueueEvent event) {
